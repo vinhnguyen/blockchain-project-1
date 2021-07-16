@@ -38,11 +38,16 @@ class Block {
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
-            let toBeValidatedHash = self.hash;
-            self.hash = null;
-            let calculatedHash = SHA256(JSON.stringify(self)).toString();
-            self.hash = toBeValidatedHash;
-            resolve(calculatedHash === toBeValidatedHash);
+            try {
+                let toBeValidatedHash = self.hash;
+                self.hash = null;
+                let calculatedHash = SHA256(JSON.stringify(self)).toString();
+                self.hash = toBeValidatedHash;
+                resolve(calculatedHash === toBeValidatedHash);
+            } catch (err) {
+                console.log(err);
+                reject("Block validate error");
+            }
         });
     }
 

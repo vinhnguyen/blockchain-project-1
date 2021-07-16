@@ -74,7 +74,10 @@ class Blockchain {
                 block.hash = SHA256(JSON.stringify(block)).toString();
                 self.chain.push(block);
                 self.height = self.chain.length;
-                resolve(block);
+
+                self.validateChain()
+                    .then(resolve(block))
+                    .catch(reject("Chain is invalid! Cannot add block"));
             }
             catch (error) {
                 reject(error);
@@ -191,15 +194,20 @@ class Blockchain {
         let self = this, errorLog = [];
 
         return new Promise(async (resolve, reject) => {
-            if (self.length <= 1) resolve(errorLog);
-
-            for (let i = 1; i < self.chain.length; i++) {
-                let block = self.block[i];
-                let prevBlock = self.block[i - 1];
-                let isValidBlock = await block.validate() && (block.previousBlockHash == prevBlock.hash);
-                if (!isValidBlock) errorLog.push(`Block ${i} is not valid!`);
-                resolve(errorLog);
-            }            
+            try {
+                if (self.chain.length <= 1) resolve(errorLog);
+    
+                for (let i = 1; i < self.chain.length; i++) {
+                    let block = self.chain[i];
+                    let prevBlock = self.chain[i - 1];
+                    let isValidBlock = await block.validate() && (block.previousBlockHash == prevBlock.hash);
+                    if (!isValidBlock) errorLog.push(`Block ${i} is not valid!`);
+                    resolve(errorLog);
+                }            
+            } catch (err) {
+                console.log(err);
+                reject("Exception during validation");
+            }
         });
     }
 
