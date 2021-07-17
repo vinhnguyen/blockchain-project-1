@@ -195,15 +195,16 @@ class Blockchain {
 
         return new Promise(async (resolve, reject) => {
             try {
-                if (self.chain.length <= 1) resolve(errorLog);
-    
-                for (let i = 1; i < self.chain.length; i++) {
+                for (let i = 0; i < self.chain.length; i++) {
                     let block = self.chain[i];
-                    let prevBlock = self.chain[i - 1];
-                    let isValidBlock = await block.validate() && (block.previousBlockHash == prevBlock.hash);
+                    let isValidBlock = await block.validate();
+                    if (i > 0) {
+                        let prevBlock = self.chain[i - 1];
+                        isValidBlock = isValidBlock && (block.previousBlockHash == prevBlock.hash);
+                    }
                     if (!isValidBlock) errorLog.push(`Block ${i} is not valid!`);
-                    resolve(errorLog);
-                }            
+                }
+                resolve(errorLog);        
             } catch (err) {
                 console.log(err);
                 reject("Exception during validation");
